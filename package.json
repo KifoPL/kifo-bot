@@ -1,0 +1,26 @@
+{
+  "name": "kifo-bot",
+  "version": "1.0.0",
+  "description": "All but orthodox.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node ./dist/index.js",
+    "dev": "node ./dist/dev.js",
+    "lint": "eslint .",
+    "lint-fix": "eslint . --fix",
+    "build": "npx tsc"
+  },
+  "keywords": [],
+  "author": "Kifo Unaabi",
+  "license": "ISC",
+  "devDependencies": {
+    "eslint": "^8.22.0",
+    "prettier": "2.8.0"
+  },
+  "dependencies": {
+    "discord.js": "^14.7.1",
+    "dotenv": "^16.0.3"
+  },
+  "type": "module"
+}
