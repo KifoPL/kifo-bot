@@ -1,21 +1,30 @@
+// kifo-bot copyright (C) 2022 KifoPL
+//
+// This program comes with ABSOLUTELY NO WARRANTY; for details checkout LICENSE file in root directory.
+// This is free software, and you are welcome to redistribute it
+// under certain conditions; type `show c' for details.
+
 // Require the necessary discord.js classes
-import { Client, Collection, GatewayIntentBits } from 'discord.js';
-import type {
-    KifoClient,
-    KifoCommand,
-} from './interfaces/discordExtensions.js';
-import * as fs from 'fs';
-import { handleAllEvents, setAllCommands } from './helpers.js';
+import { Collection } from "discord.js";
+import type { KifoChatInputCommand } from "./interfaces/discordExtensions.js";
+import { handleAllEvents, setAllCommands } from "./helpers/fileHelpers.js";
+import { client, config } from "./client.js";
+import { logger } from "./helpers/logger.js";
 
-const config = JSON.parse(fs.readFileSync('./config.json', 'utf8'));
+logger.debug('Beginning index.js execution...');
 
-const client = <KifoClient>new Client({ intents: [GatewayIntentBits.Guilds] });
+client.commands = new Collection<string, KifoChatInputCommand>();
 
-client.commands = new Collection<string, KifoCommand>();
+setAllCommands(client)
+    .then(async () => {
+        await handleAllEvents(client);
 
-await setAllCommands(client);
-await handleAllEvents(client);
-
-client.login(config.token).then(() => {
-    console.log('Logged in!');
-});
+        client.login(config.token).then(() => {
+            logger.success('Logged in!');
+        }).catch((error) => {
+            logger.fatal(error);
+        });
+    })
+    .catch((error) => {
+        logger.fatal(error);
+    });

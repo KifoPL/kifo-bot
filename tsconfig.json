@@ -29,7 +29,6 @@
     "noEmitHelpers": true,
     "outDir": "dist",
     "rootDir": "src",
-    "declarationDir": "dist/types",
     "preserveConstEnums": true,
     "removeComments": false,
     "sourceMap": true,
