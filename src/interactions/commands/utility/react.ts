@@ -12,6 +12,8 @@ import {
 import type { KifoChatInputCommand } from '../../../interfaces/discordExtensions.js';
 import { kifoEmbed } from '../../../helpers/embed.js';
 import { dbFacade } from '../../../data/mySqlAccess.js';
+import { client } from '../../../client.js';
+import { logger } from '../../../helpers/logger.js';
 
 const builder = new SlashCommandBuilder();
 
@@ -122,9 +124,30 @@ async function on(interaction: ChatInputCommandInteraction) {
         return;
     }
 
-    for (const reaction of reactions) {
-        // TODO finish checking if reactions are legit
-    }
+    const values = reactions.map((r) => [interaction.channelId, r]);
+
+    await dbFacade.query('INSERT INTO react (ChannelId, emote) VALUES ?', [
+        values,
+    ]);
+
+    client.interactionMaps.react.push({
+        channelId: interaction.channelId,
+        reactions: reactions,
+    });
+
+    logger.info(
+        `Added ${reactions.length} reactions to channel ${interaction.channelId}.`
+    );
+
+    await interaction.editReply({
+        embeds: [
+            kifoEmbed(
+                `I will now react to all messages in this channel with ${reactions.join(
+                    ', '
+                )}.`
+            ),
+        ],
+    });
 }
 
 async function check(interaction: ChatInputCommandInteraction) {
@@ -133,7 +156,7 @@ async function check(interaction: ChatInputCommandInteraction) {
             Id: number;
             ChannelId: number;
             emote: string;
-        }>(`SELECT Id, ChannelId, emote FROM react WHERE ChannelId = ?`, [
+        }>('SELECT Id, ChannelId, emote FROM react WHERE ChannelId = ?', [
             interaction.channelId,
         ])
         .catch((err) => {
