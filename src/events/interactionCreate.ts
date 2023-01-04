@@ -1,21 +1,21 @@
-// kifo-bot copyright (C) 2022 KifoPL
+// kifo-bot copyright (C) 2023 KifoPL
 //
 // This program comes with ABSOLUTELY NO WARRANTY; for details checkout LICENSE file in root directory.
 // This is free software, and you are welcome to redistribute it
-// under certain conditions; type `show c' for details.
+// under certain conditions. Read more at: https://github.com/KifoPL/kifo-bot/blob/master/LICENSE
 
 import {
     BaseInteraction,
     ChatInputCommandInteraction,
     Events,
 } from 'discord.js';
-import type { KifoClient } from '../interfaces/discordExtensions.js';
+import type { KifoClient, KifoEvent } from '../interfaces/discordExtensions.js';
 import { logger } from '../helpers/logger.js';
 import { kifoEmbed } from '../helpers/embed.js';
 
-export default {
+const interactionCreate: KifoEvent = {
     name: Events.InteractionCreate,
-    once: false,
+    isOnce: false,
     async execute(interaction: BaseInteraction) {
         if (interaction.isChatInputCommand()) {
             await HandleChatInputCommand(
@@ -25,7 +25,9 @@ export default {
     },
 };
 
-export async function HandleChatInputCommand(
+export default interactionCreate;
+
+async function HandleChatInputCommand(
     interaction: ChatInputCommandInteraction
 ) {
     const command = await (<KifoClient>interaction.client).commands.get(
@@ -49,37 +51,46 @@ export async function HandleChatInputCommand(
 
     const time = new Date().getTime();
 
-    command.execute(interaction).then(() => {
-        const timeTaken = new Date().getTime() - time;
-        logger.info(`${interaction.id} slash command ${interaction.commandName} took ${timeTaken}ms`);
-    }).catch((error) => {
-        logger.error(error);
-        logger.trace(error);
-        try {
-            // Try to notify user of an error
-            if (interaction.isRepliable()) {
-                interaction
-                    .reply({
-                        embeds: [
-                            kifoEmbed(
-                                'There was an error while executing this command!'
-                            ),
-                        ],
-                    })
-                    .catch((_) => {
-                        interaction
-                            .editReply({
-                                embeds: [
-                                    kifoEmbed(
-                                        'There was an error while executing this command!'
-                                    ),
-                                ],
-                            })
-                            .catch((_) => {});
-                    });
+    command
+        .execute(interaction)
+        .then(() => {
+            const timeTaken = new Date().getTime() - time;
+            logger.info(`${interaction.id} slash command handled`, {
+                command: interaction.commandName,
+                timeTaken: timeTaken.toString() + 'ms',
+                options: interaction.options.data.map((option) => {
+                    return { name: option.name, value: option.value };
+                }),
+            });
+        })
+        .catch((error) => {
+            logger.error(error);
+            logger.trace(error);
+            try {
+                // Try to notify user of an error
+                if (interaction.isRepliable()) {
+                    interaction
+                        .reply({
+                            embeds: [
+                                kifoEmbed(
+                                    'There was an error while executing this command!'
+                                ),
+                            ],
+                        })
+                        .catch((_) => {
+                            interaction
+                                .editReply({
+                                    embeds: [
+                                        kifoEmbed(
+                                            'There was an error while executing this command!'
+                                        ),
+                                    ],
+                                })
+                                .catch((_) => {});
+                        });
+                }
+            } catch (err) {
+                logger.error(err);
             }
-        } catch (err) {
-            logger.error(err);
-        }
-    });
+        });
 }

@@ -1,8 +1,8 @@
-// kifo-bot copyright (C) 2022 KifoPL
+// kifo-bot copyright (C) 2023 KifoPL
 //
 // This program comes with ABSOLUTELY NO WARRANTY; for details checkout LICENSE file in root directory.
 // This is free software, and you are welcome to redistribute it
-// under certain conditions; type `show c' for details.
+// under certain conditions. Read more at: https://github.com/KifoPL/kifo-bot/blob/master/LICENSE
 
 import {
     ChannelType,
@@ -21,6 +21,7 @@ import ms from 'ms';
 
 import api from 'axios';
 import numeral from 'numeral';
+import { plural } from '../../../helpers/plural.js';
 
 const builder = new SlashCommandBuilder();
 builder
@@ -158,7 +159,7 @@ export async function getServerStats(guild: Guild): Promise<EmbedBuilder> {
             },
             {
                 name: 'Boosts Status:',
-                value: `<:boost:823658698412392449> ${guild.premiumTier}, thanks to ${guild.premiumSubscriptionCount} boosts.`,
+                value: `<:boost:823658698412392449> ${guild.premiumTier}, thanks to ${guild.premiumSubscriptionCount} boost${plural(guild.premiumSubscriptionCount ?? 0)}.`,
             },
             {
                 name: `Roles`,
@@ -177,11 +178,11 @@ export async function getServerStats(guild: Guild): Promise<EmbedBuilder> {
             {
                 name: `Channels`,
                 value: `<:voice:823658022684721164> ${channelVoiceCount} voice channel${
-                    channelVoiceCount != 1 ? 's' : ''
+                    plural(channelVoiceCount)
                 }, <:textchannel:823658022849085512> ${channelTextCount} text channel${
-                    channelTextCount != 1 ? 's' : ''
+                    plural(channelTextCount)
                 } (excluding threads), <:categoryNEW:842672130420506625> ${channelCategoryCount} categor${
-                    channelCategoryCount != 1 ? 'ies' : 'y'
+                    plural(channelCategoryCount, 'y', 'ies')
                 }, Total: ${channelCount}.`,
             },
             {

@@ -1,8 +1,8 @@
-// kifo-bot copyright (C) 2022 KifoPL
+// kifo-bot copyright (C) 2023 KifoPL
 //
 // This program comes with ABSOLUTELY NO WARRANTY; for details checkout LICENSE file in root directory.
 // This is free software, and you are welcome to redistribute it
-// under certain conditions; type `show c' for details.
+// under certain conditions. Read more at: https://github.com/KifoPL/kifo-bot/blob/master/LICENSE
 
 import * as path from 'path';
 import type {
@@ -42,7 +42,7 @@ export async function setAllCommands(client: KifoClient): Promise<void> {
             const command = await import(file);
             const defaultCmd = command.default;
             // check if command is of type KifoCommand
-            if (defaultCmd.data && defaultCmd.execute)
+            if (defaultCmd !== undefined && defaultCmd.data && defaultCmd.execute)
                 setCommand(client, <KifoChatInputCommand>defaultCmd);
             else {
                 logger.error(
